@@ -92,4 +92,20 @@ export default class Auth {
     const grantedScopes = (_scopes || "").split(" ");
     return scopes.every(scope => grantedScopes.includes(scope));
   }
+
+  renewToken(cb) {
+    this.auth0.checkSession({}, (err, result) => {
+      if (err) {
+        console.log(`Error: ${err.error} - ${err.error_description}.`);
+      } else {
+        this.setSession(result);
+      }
+      if (cb) cb(err, result);
+    });
+  }
+
+  scheduleTokenRenewal() {
+    const delay = _expiresAt - Date.now();
+    if (delay > 0) setTimeout(() => this.renewToken(), delay);
+  }
 }
