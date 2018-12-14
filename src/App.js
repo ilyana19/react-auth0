@@ -10,61 +10,45 @@ import Callback from './components/Callback';
 import Public from './components/Public';
 import Private from './components/Private';
 import Courses from './components/Courses';
+import PrivateRoute from './components/PrivateRoute';
+import AuthContext from "./components/AuthContext";
 
 class App extends Component {
   constructor(props) {
     super(props)
-    this.auth = new Auth(this.props.history)
+    this.state = {
+      auth: new Auth(this.props.history)
+    }
   }
 
   render() {
+    const {auth} = this.state
+
     return (
-      <div>
-        <Nav auth={this.auth} />
+      <AuthContext.Provider value={auth}>
+        <Nav auth={auth} />
 
         <div className="body">
           <Route
             path="/"
             exact
-            render={props => <Home auth={this.auth} {...props} />}
+            render={props => <Home auth={auth} {...props} />}
           />
           <Route
             path="/callback"
-            render={props => <Callback auth={this.auth} {...props} />}
+            render={props => <Callback auth={auth} {...props} />}
           />
-          <Route
-            path="/profile"
-            render={props =>
-              this.auth.isAuthenticated() ? (
-                <Profile auth={this.auth} {...props} />
-              ) : (
-                <Redirect to="/" />
-              )
-            }
-          />
+          <PrivateRoute path="/profile" component={Profile} auth={auth} />
           <Route path="/public" component={Public} />
-          <Route
-            path="/private"
-            render={props =>
-              this.auth.isAuthenticated() ? (
-                <Private auth={this.auth} {...props} />
-              ) : (
-                this.auth.login()
-              )
-            }
-          />
-          <Route
+          <PrivateRoute path="/private" component={Private} auth={auth} />
+          <PrivateRoute
             path="/courses"
-            render={props =>
-              this.auth.isAuthenticated() && this.auth.userHasScopes(["read:courses"]) ? (
-                <Courses auth={this.auth} {...props} />
-              ) : (
-                this.auth.login()
-              )
-            }
+            component={Courses}
+            auth={auth}
+            scopes={["read:scopes"]}
           />
         </div>
-      </div>
+      </AuthContext.Provider>
     );
   }
 }
