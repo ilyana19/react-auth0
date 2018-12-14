@@ -8,6 +8,7 @@ import Home from './components/Home';
 import Profile from './components/Profile';
 import Callback from './components/Callback';
 import Public from './components/Public';
+import Private from './components/Private';
 
 class App extends Component {
   constructor(props) {
@@ -41,6 +42,16 @@ class App extends Component {
             }
           />
           <Route path="/public" component={Public} />
+          <Route
+            path="/private"
+            render={props =>
+              this.auth.isAuthenticated() ? (
+                <Private auth={this.auth} {...props} />
+              ) : (
+                this.auth.login()
+              )
+            }
+          />
         </div>
       </div>
     );
